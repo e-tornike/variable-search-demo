@@ -122,7 +122,7 @@ try:
                     osentence = group.iloc[0].get('sentence', '')
 
                     st.markdown(f'Question: {osentence}', unsafe_allow_html=True)
-                    expander_text = f'Show {group.shape[0]} more survey items.' if group.shape[0] > 1 else f'Show {group.shape[0]} more survey item.'
+                    expander_text = f'Show {group.shape[0]} grouped survey items.' if group.shape[0] > 1 else f'Show {group.shape[0]} more survey item.'
                     modal = st.expander(expander_text)
                     for i in range(group.shape[0]):
                         row = group.iloc[i]
