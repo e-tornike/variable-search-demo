@@ -53,12 +53,12 @@ def prepare_models(index_name, model_name_or_path):
 
 def prepare(settings, langs, pattern):
     langs = sorted(settings.languages.split(','))
-    logging.info("Preparing data...")
+    # logging.info("Preparing data...")
     df = prepare_data(settings.corpus_path, langs, pattern)
-    logging.info("Done.")
-    logging.info("Preparing models...")
+    # logging.info("Done.")
+    # logging.info("Preparing models...")
     hsearcher = prepare_models(settings.index_name, settings.model_name_or_path)
-    logging.info("Done.")
+    # logging.info("Done.")
     return df, hsearcher
 
 # try:
@@ -96,7 +96,7 @@ else:
 corpus_groups = corpus_df.groupby(by='alpha_sentence')
 
 try:
-    if query or button_clicked:
+    if (query or button_clicked) and query != "":
         logging.info(f"Query: '{query}'")
         logging.info(f"Countries: {countries}")
         logging.info(f"Min/max Years: {year}")
