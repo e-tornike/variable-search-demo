@@ -24,9 +24,10 @@ sidebar_description = """
     
     __Info__:
 
-    This site allows you to search for survey items from ALLBUS, Eurobarometer, ISSP, and more.
+    This site allows you to search for survey items (i.e., variables) from surveys such as ALLBUS, Eurobarometer, ISSP, and more.
     Using language models, the input is semantically compared against the question text of survey items.
     Ideally, the results should contain the same or similar semantic information as your input.
+    You can filter the search results by year or country of the survey. 
 
     __How to use__:
 
@@ -40,7 +41,7 @@ st.sidebar.markdown(sidebar_description)
 
 
 st.title("Variable Search")
-st.markdown(f"Search across survey items (i.e., variables) from ALLBUS, Eurobarometer, ISSP, and more.<br>In total, you can search for over 80,000 survey items.", unsafe_allow_html=True)
+st.markdown(f"Search across survey items (i.e., variables) from surveys such as ALLBUS, Eurobarometer, ISSP, and more.<br>In total, you can search for over 80,000 items.", unsafe_allow_html=True)
 
 
 @st.cache_data
