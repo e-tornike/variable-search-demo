@@ -6,7 +6,7 @@ import logging
 from config import Settings
 from helper import load_corpus, load_searchers, filter_corpus, filter_years
 
-st.set_page_config(page_title="S4I - Semantic Similarity Search for Survey Items", page_icon="🔎")
+st.set_page_config(page_title="Variable Search", page_icon="🔎")
 
 hide_streamlit_style = """
 <style>
