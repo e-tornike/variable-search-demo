@@ -20,11 +20,13 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 sidebar_description = """
     __NOTE__:
 
-    This website logs the text that you write in the search input field. The data is used to improve the search engine.
+    **This website saves the text that you write in the search input field. This data is used to improve the search engine.**
     
     __Info__:
 
-    This site allows you to search for survey items from research data linked to publications from [SSOAR](https://www.gesis.org/ssoar/home).
+    This site allows you to search for survey items from ALLBUS, Eurobarometer, ISSP, and more.
+    Using language models, the input is semantically compared against the question text of survey items.
+    Ideally, the results should contain the same or similar semantic information as your input.
 
     __How to use__:
 
@@ -37,8 +39,8 @@ sidebar_description = """
 st.sidebar.markdown(sidebar_description)
 
 
-st.title("Search Engine for Survey Items")
-st.markdown(f"This site allows you to search for survey items from research data linked to publications from [SSOAR](https://www.gesis.org/ssoar/home).<br>In total, you can search for over 80,000 survey items.", unsafe_allow_html=True)
+st.title("Variable Search")
+st.markdown(f"Search across survey items (i.e., variables) from ALLBUS, Eurobarometer, ISSP, and more.<br>In total, you can search for over 80,000 survey items.", unsafe_allow_html=True)
 
 
 @st.cache_data
@@ -62,7 +64,7 @@ def prepare(settings, langs, pattern):
     return df, hsearcher
 
 # try:
-st.info("Please note, that the **text** you write into the text box **is logged** to improve the search engine.")
+st.info("Please note, the **text** that you write into the text box **is logged** (i.e., saved) to improve the search engine.")
 
 col1, col2 = st.columns([9,1])
 
