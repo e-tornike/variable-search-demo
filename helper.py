@@ -1,8 +1,10 @@
+# from itertools import count
 import re
 import numpy as np
 import pandas as pd
 import operator as op
 from uuid import uuid4
+import pycountry
 from pyserini.search import LuceneSearcher, FaissSearcher
 from pyserini.search.hybrid import HybridSearcher
 
@@ -18,6 +20,23 @@ def load_data(path, langs):
     return df
 
 
+def get_country(code: str) -> str:
+    if code:
+        country = pycountry.countries.get(alpha_2=code)
+        if country:
+            # print(country.name)
+            return country.name
+        else:
+            if "-" in code:
+                cs = code.split("-")
+                country = pycountry.countries.get(alpha_2=cs[0])
+                if country:
+                    return country.name+f" ({'-'.join(cs[1:])})"
+            return code
+    else:
+        return ""
+
+
 def load_corpus(corpus_path, langs, pattern):
     corpus_df = load_data(corpus_path, langs)
     corpus_df["sentence"] = corpus_df["sentence"].apply(lambda x: np.nan if x == "" else x)
@@ -29,6 +48,7 @@ def load_corpus(corpus_path, langs, pattern):
     corpus_df["sentence"] = corpus_df["sentence"].apply(lambda x: x.lower())
     corpus_df["alpha_sentence"] = corpus_df["sentence"].apply(lambda x: re.sub(pattern, '', x).lower())
     corpus_df["countries"] = corpus_df["countries"].apply(lambda x: x.replace("'","").replace(" ", "").replace("[", "").replace("]", "").split(","))
+    corpus_df["countries"] = corpus_df["countries"].apply(lambda x: [get_country(c) for c in x])
     return corpus_df
 
 
