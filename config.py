@@ -11,3 +11,12 @@ class Settings:
     alpha = 2.0
     normalization = True
     weight_on_dense = False
+    predefined_inputs = [
+            "Do you have a job?",
+            "Are you happy with the healthcare system?",
+            "Do you think income differences are too large?",
+            "financial literacy",
+            "health literacy",
+            "psychometric scales for anxiety",
+            "tolerance for income inequality"
+            ]
