@@ -1,5 +1,5 @@
 import re
-import string
+# import string
 import streamlit as st
 import logging
 
@@ -18,8 +18,6 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 
 sidebar_description = """
-    __NOTE__:
-
     **This website saves the text that you write in the search input field. This data is used to improve the search engine.**
     
     __Info__:
@@ -31,11 +29,18 @@ sidebar_description = """
 
     __How to use__:
 
-    1. Enter a search query in the search input field.
-    2. Select one or more countries from the list or leave it empty.
-    3. Select the range of years to be included in the search results.
-    4. Click on the search button.
-    5. Evaluate the results by clicking on "Show X more survey item(s)" to expand the list of results that contain an identical question.
+    1. Select a pre-defined input or enter a search query in the search input field.
+    2. Select one or more countries from the list under "Geography" or leave it empty.
+    3. Select a study group or leave it empty.
+    4. Select the range of years to be included in the search results.
+    5. Click on the search button.
+    6. Evaluate the results by clicking on "Show X more survey item(s)" to expand the list of results that contain an identical question.
+
+    __NOTE__:
+
+    __Longitudal Studies__: Variables that are grouped together often originate from longitudal studies (i.e., repeated measures over long periods of time).
+
+    __Concept Search__: While the search system will perform best for finding texts that are semantically-similar to the input, you may also try more abstract inputs such as concepts (e.g., "financial literacy"). While the system is not specifically designed to retrieve variables that are related to concepts, language models (having seen a large part of the internet) may map concepts to texts similar to the variables that are used to operationalize and measure them.
 """
 st.sidebar.markdown(sidebar_description)
 
@@ -67,32 +72,46 @@ def prepare(settings, langs, pattern):
 # try:
 st.info("Please note, the **text** that you write into the text box **is logged** (i.e., saved) to improve the search engine.")
 
+settings = Settings()
+
+query = st.selectbox("Pre-defined inputs:", ["Another query (via 'Search input')..."]+settings.predefined_inputs, key="pre-query")
+# query = st.selectbox("Pre-defined inputs:", ["Another query (via 'Search input')...", "Do you have a job?", "Are you happy with the healthcare system?"])
+
 col1, col2 = st.columns([9,1])
 
-with col1:
-    query = st.text_input(label="Search input:", placeholder="Do you have a job?", key="query")
+if query == "Another query (via 'Search input')...":
+    with col1:
+    # query = st.selectbox("Pre-defined Queries:", ["Other query", "Do you have a job?", "Are you happy with the healthcare system?"])
+        query = st.text_input(label="Search input:", placeholder="Do you have a job?", key="query")
 
-with col2:
-    st.write('#')
-    button_clicked = st.button("🔎")
+    with col2:
+        st.write('#')
+        button_clicked = st.button("🔎")
+else:
+    button_clicked = False
 
-settings = Settings()
 langs = sorted(settings.languages.split(','))
-pattern = re.compile('[\W_]+')
+pattern = re.compile(r'[\W_]+')
 
 corpus_df, hsearcher = prepare(settings, langs, pattern)
 
 all_countries = sorted(list(set([c for cs in corpus_df["countries"].tolist() for c in cs if c and "_" not in c])))
-countries = st.multiselect("Country(ies):", all_countries, key="countries")
+countries = st.multiselect("Geography:", all_countries, key="countries")
 if countries:
     corpus_df = filter_corpus(corpus_df, countries, column="countries")
+
+all_study_groups = sorted(list(set(corpus_df["title"].tolist())))
+study_groups = st.multiselect("Study Group:", all_study_groups, key="study_groups")
+if study_groups:
+    corpus_df = filter_corpus(corpus_df, study_groups, column="title")
 
 unique_years = list(set([int(x) for x in corpus_df["date"].tolist() if isinstance(x, str) or isinstance(x, int)]))
 min_year, max_year = min(unique_years), max(unique_years)
 if min_year < max_year:
-    year = st.slider("Year(s):", min_year, max_year, (min_year, max_year), 1, key="year")
+    year = st.slider("Publication Year:", min_year, max_year, (min_year, max_year), 1, key="year")
     corpus_df = filter_years(corpus_df, year)
 else:
+    year = min_year
     st.markdown(f"Year: {min_year}")
     st.markdown("---")
 
@@ -101,7 +120,7 @@ corpus_groups = corpus_df.groupby(by='alpha_sentence')
 try:
     if (query or button_clicked) and query != "":
         logging.info(f"Query: '{query}'")
-        logging.info(f"Countries: {countries}")
+        logging.info(f"Geography: {countries}")
         logging.info(f"Min/max Years: {year}")
 
         with st.spinner("Searching..."):
@@ -147,7 +166,7 @@ try:
                                         <br>Item: {ritem}\
                                         <br>Research Data: {rtitle}\
                                         <br>Study Date: {rdate}\
-                                        <br>Countries: {rcountries}\
+                                        <br>Geography: {rcountries}\
                                         <br>Question Type 1: {rqt1}\
                                         <br>Question Type 2: {rqt2}',
                                         unsafe_allow_html=True
