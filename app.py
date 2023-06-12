@@ -69,118 +69,121 @@ def prepare(settings, langs, pattern):
     # logging.info("Done.")
     return df, hsearcher
 
-# try:
-st.info("Please note, the **text** that you write into the text box **is logged** (i.e., saved) to improve the search engine.")
-
-settings = Settings()
-
-query = st.selectbox("Pre-defined inputs:", ["Another query (via 'Search input')..."]+settings.predefined_inputs, key="pre-query")
-# query = st.selectbox("Pre-defined inputs:", ["Another query (via 'Search input')...", "Do you have a job?", "Are you happy with the healthcare system?"])
-
-col1, col2 = st.columns([9,1])
-
-if query == "Another query (via 'Search input')...":
-    with col1:
-    # query = st.selectbox("Pre-defined Queries:", ["Other query", "Do you have a job?", "Are you happy with the healthcare system?"])
-        query = st.text_input(label="Search input:", placeholder="Do you have a job?", key="query")
-
-    with col2:
-        st.write('#')
-        button_clicked = st.button("🔎")
-else:
-    button_clicked = False
-
-langs = sorted(settings.languages.split(','))
-pattern = re.compile(r'[\W_]+')
-
-corpus_df, hsearcher = prepare(settings, langs, pattern)
-
-all_countries = sorted(list(set([c for cs in corpus_df["countries"].tolist() for c in cs if c and "_" not in c])))
-countries = st.multiselect("Geography:", all_countries, key="countries")
-if countries:
-    corpus_df = filter_corpus(corpus_df, countries, column="countries")
-
-all_study_groups = sorted(list(set(corpus_df["title"].tolist())))
-study_groups = st.multiselect("Study Group:", all_study_groups, key="study_groups")
-if study_groups:
-    corpus_df = filter_corpus(corpus_df, study_groups, column="title")
-
-unique_years = list(set([int(x) for x in corpus_df["date"].tolist() if isinstance(x, str) or isinstance(x, int)]))
-min_year, max_year = min(unique_years), max(unique_years)
-if min_year < max_year:
-    year = st.slider("Publication Year:", min_year, max_year, (min_year, max_year), 1, key="year")
-    corpus_df = filter_years(corpus_df, year)
-else:
-    year = min_year
-    st.markdown(f"Year: {min_year}")
-    st.markdown("---")
-
-corpus_groups = corpus_df.groupby(by='alpha_sentence')
-
 try:
-    if (query or button_clicked) and query != "":
-        logging.info(f"Query: '{query}'")
-        logging.info(f"Geography: {countries}")
-        logging.info(f"Min/max Years: {year}")
-
-        with st.spinner("Searching..."):
-            hits = hsearcher.search(query, alpha=settings.alpha, k0=settings.top_k, k=settings.top_k, normalization=settings.normalization, weight_on_dense=settings.weight_on_dense)
-            result_sentences = []
-            for hit in hits:
-                _id = hit.docid
-                if _id in corpus_df.index:
-                    result_sentence = corpus_df.loc[_id]["sentence"]
-                    result_sentence = re.sub(pattern, '', result_sentence).lower()
-                    if result_sentence not in result_sentences:
-                        result_sentences.append(result_sentence)
-
-            st.write(f"<i>Showing the top {len(result_sentences)} result(s) out of {len(corpus_groups.groups)} question(s).</i>", unsafe_allow_html=True)
-            st.write("---")
-
-            # ogroups = sorted(corpus_groups.groups.items(), key=lambda x: x[1][0])
-            for j,sentence in enumerate(result_sentences):
-                if sentence in corpus_groups.groups:
-                    group = corpus_groups.get_group(sentence)
-                    osentence = group.iloc[0].get('sentence', '')
-
-                    st.markdown(f'Question: {osentence}', unsafe_allow_html=True)
-                    expander_text = f'Show {group.shape[0]} grouped survey items.' if group.shape[0] > 1 else f'Show {group.shape[0]} grouped survey item.'
-                    modal = st.expander(expander_text)
-                    for i in range(group.shape[0]):
-                        row = group.iloc[i]
-                        rid = row.get('id', '')
-                        rlabel = row.get('label', '')
-                        rsq = row.get('sub-question', '')
-                        ritem = row.get('item_category', '')
-                        rtitle = row.get('title', '')
-                        if rtitle and rid:
-                            rtitle = f'<a href="https://search.gesis.org/research_data/{rid.split("_")[0]}">{rtitle}</a>'
-                        rdate = row.get('date', '')  # TODO: what is this date?
-                        rcountries = row.get('countries', '')
-                        rqt1 = row.get('question_type1', '')
-                        rqt2 = row.get('question_type2', '')
-
-                        modal.markdown(f'<a href="https://search.gesis.org/variables/exploredata-{rid}">{rid}</a>\
-                                        <br>Label: {rlabel}\
-                                        <br>Sub-Question: {rsq}\
-                                        <br>Item: {ritem}\
-                                        <br>Research Data: {rtitle}\
-                                        <br>Study Date: {rdate}\
-                                        <br>Geography: {rcountries}\
-                                        <br>Question Type 1: {rqt1}\
-                                        <br>Question Type 2: {rqt2}',
-                                        unsafe_allow_html=True
-                                    )
-                        if i+1 < group.shape[0] > 1:
-                            modal.markdown('---')
-
-                    if j+1 < len(result_sentences) > 1:
-                        st.markdown('---')
-                else:
-                    logging.debug(f"Sentence is not in groups: {sentence}")
+    st.info("Please note, the **text** that you write into the text box **is saved** to improve the search engine.")
+    
+    settings = Settings()
+    
+    query = st.selectbox("Pre-defined inputs:", ["Another query (via 'Search input')..."]+settings.predefined_inputs, key="pre-query")
+    # query = st.selectbox("Pre-defined inputs:", ["Another query (via 'Search input')...", "Do you have a job?", "Are you happy with the healthcare system?"])
+    
+    col1, col2 = st.columns([9,1])
+    
+    if query == "Another query (via 'Search input')...":
+        with col1:
+        # query = st.selectbox("Pre-defined Queries:", ["Other query", "Do you have a job?", "Are you happy with the healthcare system?"])
+            query = st.text_input(label="Search input:", placeholder="Do you have a job?", key="query")
+    
+        with col2:
+            st.write('#')
+            button_clicked = st.button("🔎")
+    else:
+        button_clicked = False
+    
+    langs = sorted(settings.languages.split(','))
+    pattern = re.compile(r'[\W_]+')
+    
+    corpus_df, hsearcher = prepare(settings, langs, pattern)
+    
+    all_countries = sorted(list(set([c for cs in corpus_df["countries"].tolist() for c in cs if c and "_" not in c])))
+    countries = st.multiselect("Geography:", all_countries, key="countries")
+    if countries:
+        corpus_df = filter_corpus(corpus_df, countries, column="countries")
+    
+    all_study_groups = sorted(list(set(corpus_df["title"].tolist())))
+    study_groups = st.multiselect("Study Group:", all_study_groups, key="study_groups")
+    if study_groups:
+        corpus_df = filter_corpus(corpus_df, study_groups, column="title", row_type=str)
+    
+    unique_years = list(set([int(x) for x in corpus_df["date"].tolist() if isinstance(x, str) or isinstance(x, int)]))
+    if unique_years:
+        min_year, max_year = min(unique_years), max(unique_years)
+        if min_year < max_year:
+            year = st.slider("Publication Year:", min_year, max_year, (min_year, max_year), 1, key="year")
+            corpus_df = filter_years(corpus_df, year)
+        else:
+            year = min_year
+            st.markdown(f"Year: {min_year}")
+            st.markdown("---")
+    else:
+        year = None
+    
+    corpus_groups = corpus_df.groupby(by='alpha_sentence')
+    
+    try:
+        if (query or button_clicked) and query != "":
+            logging.info(f"Query: '{query}'")
+            logging.info(f"Geography: {countries}")
+            logging.info(f"Min/max Years: {year}")
+    
+            with st.spinner("Searching..."):
+                hits = hsearcher.search(query, alpha=settings.alpha, k0=settings.top_k, k=settings.top_k, normalization=settings.normalization, weight_on_dense=settings.weight_on_dense)
+                result_sentences = []
+                for hit in hits:
+                    _id = hit.docid
+                    if _id in corpus_df.index:
+                        result_sentence = corpus_df.loc[_id]["sentence"]
+                        result_sentence = re.sub(pattern, '', result_sentence).lower()
+                        if result_sentence not in result_sentences:
+                            result_sentences.append(result_sentence)
+    
+                st.write(f"<i>Showing the top {len(result_sentences)} result(s) out of {len(corpus_groups.groups)} question(s).</i>", unsafe_allow_html=True)
+                st.write("---")
+    
+                # ogroups = sorted(corpus_groups.groups.items(), key=lambda x: x[1][0])
+                for j,sentence in enumerate(result_sentences):
+                    if sentence in corpus_groups.groups:
+                        group = corpus_groups.get_group(sentence)
+                        osentence = group.iloc[0].get('sentence', '')
+    
+                        st.markdown(f'Question: {osentence}', unsafe_allow_html=True)
+                        expander_text = f'Show {group.shape[0]} grouped survey items.' if group.shape[0] > 1 else f'Show {group.shape[0]} grouped survey item.'
+                        modal = st.expander(expander_text)
+                        for i in range(group.shape[0]):
+                            row = group.iloc[i]
+                            rid = row.get('id', '')
+                            rlabel = row.get('label', '')
+                            rsq = row.get('sub-question', '')
+                            ritem = row.get('item_category', '')
+                            rtitle = row.get('title', '')
+                            if rtitle and rid:
+                                rtitle = f'<a href="https://search.gesis.org/research_data/{rid.split("_")[0]}">{rtitle}</a>'
+                            rdate = row.get('date', '')  # TODO: what is this date?
+                            rcountries = row.get('countries', '')
+                            rqt1 = row.get('question_type1', '')
+                            rqt2 = row.get('question_type2', '')
+    
+                            modal.markdown(f'<a href="https://search.gesis.org/variables/exploredata-{rid}">{rid}</a>\
+                                            <br>Label: {rlabel}\
+                                            <br>Sub-Question: {rsq}\
+                                            <br>Item: {ritem}\
+                                            <br>Research Data: {rtitle}\
+                                            <br>Study Date: {rdate}\
+                                            <br>Geography: {rcountries}\
+                                            <br>Question Type 1: {rqt1}\
+                                            <br>Question Type 2: {rqt2}',
+                                            unsafe_allow_html=True
+                                        )
+                            if i+1 < group.shape[0] > 1:
+                                modal.markdown('---')
+    
+                        if j+1 < len(result_sentences) > 1:
+                            st.markdown('---')
+                    else:
+                        logging.debug(f"Sentence is not in groups: {sentence}")
+    except:
+        st.error("Something went wrong. Please try again with a different input.")
+        logging.warning(f'An error occurred for the query: {query}')
 except:
-    st.error("Something went wrong. Please try again with a different input.")
-    logging.warning(f'An error occurred for the query: {query}')
-# except:
-#     st.error("Something went wrong. Please try again later.")
-#     logging.warning(f'The app crashed.')
+    st.error("Something went wrong. Please try again later.")
+    logging.warning(f'The app crashed.')

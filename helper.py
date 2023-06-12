@@ -57,16 +57,21 @@ def filter_years(corpus_df, year):
     return corpus_df
 
 
-def filter_corpus(corpus_df, values, column):
-    def check_op(all_rows, list2):
+def filter_corpus(corpus_df, values, column, row_type=list):
+    def check_op(all_rows, list2, rtype):
         rows = []
         for i,row in enumerate(all_rows):
-            for e in list2:
-                if op.countOf(row, e) > 0:
-                    rows.append(i)
+            if rtype == list:
+                for e in list2:
+                    if op.countOf(row, e) > 0:
+                        rows.append(i)
+            elif rtype == str:
+                for e in list2:
+                    if e in row:
+                        rows.append(i)
         return rows
 
-    idxs = check_op(corpus_df[column].tolist(), values)
+    idxs = check_op(corpus_df[column].tolist(), values, row_type)
     corpus_df = corpus_df.loc[corpus_df.index[idxs]]
     return corpus_df
 
