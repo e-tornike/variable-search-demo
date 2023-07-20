@@ -13,9 +13,9 @@ class Settings:
     weight_on_dense = False
     predefined_inputs = [
             "Do you have a job?",
-            "Haven Sie eine Arbeit?",
             "Are you happy with the healthcare system?",
             "Do you think income differences are too large?",
+            "Which problems are you aware of that affect nature",
             "financial literacy",
             "health literacy",
             "psychometric scales for anxiety",
